@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>N3 學習講義 (Advanced)</title>
+    <!-- 引入 Tailwind CSS 處理樣式 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 React 與 Babel 以支援組件化語法 -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        /* 列印與 A4 橫式設定 */
+        @page { size: A4 landscape; margin: 0; }
+        @media print {
+            .no-print { display: none !important; }
+            body { 
+                background: white !important; 
+                margin: 0; 
+                padding: 0; 
+                -webkit-print-color-adjust: exact; 
+                print-color-adjust: exact; 
+            }
+            .a4-landscape {
+                width: 297mm !important;
+                height: 209.5mm !important;
+                margin: 0 !important;
+                box-shadow: none !important;
+                page-break-after: always;
+                border: none !important;
+            }
+            /* 強制背景色在列印時顯示 */
+            .bg-emerald-50 { background-color: #ecfdf5 !important; }
+            .bg-emerald-100 { background-color: #d1fae5 !important; }
+            .bg-emerald-500 { background-color: #10b981 !important; color: white !important;}
+            .bg-emerald-600 { background-color: #059669 !important; color: white !important;}
+            .bg-red-50 { background-color: #fef2f2 !important; }
+            .bg-gray-50 { background-color: #f9fafb !important; }
+            .bg-gray-600 { background-color: #4b5563 !important; color: white !important;}
+        }
+        
+        /* 網頁預覽版面設定 */
+        .a4-landscape {
+            width: 297mm;
+            height: 209.5mm;
+            background: white;
+            margin: 0 auto 24px auto;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+            overflow: hidden;
+            box-sizing: border-box;
+            padding: 16mm 20mm;
+        }
+    </style>
+</head>
+<body class="bg-gray-200 text-gray-900 font-sans">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // === 資料集 (20頁) ===
+        const pageData = [
+          {
+            p: 1,
+            v1: { w: "断[ことわ]る", m: "拒絕", e1: "友達[ともだち]の誘[さそ]いを断[ことわ]るのは難[むずか]しい。", m1: "拒絕朋友的邀請很難。", e2: "一彩[ひいろ]は兄[あに]からの仕送[しおく]りを断[ことわ]った。", m2: "一彩拒絕了哥哥寄來的生活費。" },
+            v2: { w: "翻訳[ほんやく]", m: "翻譯", e1: "この本[ほん]は多[おお]くの言語[げんご]に翻訳[ほんやく]されている。", m1: "這本書被翻譯成了多種語言。", e2: "嘎困[がっくん]のラジオは海外[かいがい]ファンに翻訳[ほんやく]されている。", m2: "嘎困的廣播節目被海外粉絲翻譯。" },
+            g: { p: "〜たびに", m: "每次...、每當...", e1: "この写真[しゃしん]を見[み]るたびに、旅行[りょこう]のことを思[おも]い出[だ]す。", m1: "每當看到這張照片，就會想起旅行的事。", e2: "一彩[ひいろ]が新[あたら]しい言葉[ことば]を覚[おぼ]えるたびに、メンバーは喜[よろこ]ぶ。", m2: "每當一彩記住新詞彙，成員就會很開心。" },
+            q: { t: "normal", text: "一彩は新しい言葉を聞く＿＿＿、意味を尋ねる。", c: ["たびに", "ために", "まま", "きり"], ans: 1 }
+          },
+          {
+            p: 2,
+            v1: { w: "防[ふせ]ぐ", m: "防止", e1: "風邪[かぜ]を防[ふせ]ぐためにマスクをする。", m1: "為了防止感冒而戴口罩。", e2: "ALKALOIDの解散[かいさん]を防[ふせ]ぐため、一彩[ひいろ]は奔走[ほんそう]した。", m2: "為了防止 ALKALOID 解散，一彩四處奔走。" },
+            v2: { w: "各駅[かくえき]", m: "各站停車、普通車", e1: "各駅[かくえき]停車[ていしゃ]でゆっくりと旅[たび]をする。", m1: "搭乘各站停車的電車悠閒地旅行。", e2: "都会[とかい]の電車[でんしゃ]に不慣[ふな]れな一彩[ひいろ]は、各駅[かくえき]に乗[の]った。", m2: "對都市電車不熟悉的一彩，搭乘了各站停車。" },
+            g: { p: "〜最中[さいちゅう]に", m: "正在...的時候", e1: "会議[かいぎ]の最中[さいちゅう]に、携帯[けいたい]が鳴[な]ってしまった。", m1: "正在開會的時候，手機響了。", e2: "マヨイ先輩[せんぱい]が天井[てんじょう]に隠[かく]れている最中[さいちゅう]に、一彩[ひいろ]が挨拶[あいさつ]した。", m2: "正當マヨイ前輩躲在天花板的時候，一彩向他打了招呼。" },
+            q: { t: "sort", text: "マヨイ先輩が ＿＿ ＿＿ ★ ＿＿ 、挨拶した。", c: ["に", "挨拶[あいさつ]した", "隠[かく]れている", "最中[さいちゅう]"], ans: 1 }
+          },
+          {
+            p: 3,
+            v1: { w: "落[お]ち着[つ]く", m: "冷靜", e1: "深呼吸[しんこきゅう]をして落[お]ち着[つ]いてください。", m1: "請深呼吸並冷靜下來。", e2: "ライブ前[まえ]、一彩[ひいろ]は深[ふか]く息[いき]を吐[は]いて落[お]ち着[つ]きを取[と]り戻[もど]した。", m2: "演唱會前，一彩深吐一口氣恢復了冷靜。" },
+            v2: { w: "きちんと", m: "好好地、整潔地", e1: "使[つか]った物[もの]はきちんと片付[かたづ]けなさい。", m1: "用過的東西要好好收拾。", e2: "藍良[あいら]はアイドルとしての身[み]だしなみをきちんと整[ととの]える。", m2: "藍良會好好整理身為偶像的儀容。" },
+            g: { p: "〜おかげで", m: "多虧了...、托...的福", e1: "先生[せんせい]のおかげで、試験[しけん]に合格[ごうかく]できました。", m1: "多虧了老師，我考試及格了。", e2: "巽先輩[たつみせんぱい]が運転[うんてん]してくれたおかげで、無事[ぶじ]に着[つ]いた。", m2: "多虧了巽前輩開車，我們平安抵達了。" },
+            q: { t: "normal", text: "巽先輩が運転して＿＿＿、無事に着いた。", c: ["くれたせいで", "くれたおかげで", "くれたくらい", "くれたまま"], ans: 2 }
+          },
+          {
+            p: 4,
+            v1: { w: "汚[よご]す", m: "弄髒", e1: "コーヒーをこぼして服[ふく]を汚[よご]してしまった。", m1: "打翻咖啡把衣服弄髒了。", e2: "ダンスの練習[れんしゅう]で、一彩[ひいろ]はシャツを泥[どろ]で汚[よご]した。", m2: "在舞蹈練習中，一彩用泥巴弄髒了襯衫。" },
+            v2: { w: "欠点[けってん]", m: "缺點", e1: "自分[じぶん]の欠点[けってん]を受[う]け入[い]れるのは難[むずか]しい。", m1: "要接受自己的缺點很困難。", e2: "嘎困[がっくん]は自分[じぶん]の演技[えんぎ]の欠点[けってん]を見[み]つめ直[なお]した。", m2: "嘎困重新正視了自己演技上的缺點。" },
+            g: { p: "〜につれて", m: "隨著... (兩者同時發生變化)", e1: "秋[あき]が深[ふか]まるにつれて、木々[きぎ]が赤[あか]くなる。", m1: "隨著秋意漸濃，樹葉變紅了。", e2: "アイドル活動[かつどう]を続[つづ]けるにつれて、一彩[ひいろ]は都会[とかい]に馴染[なじ]んできた。", m2: "隨著持續進行偶像活動，一彩也漸漸適應了都市。" },
+            q: { t: "sort", text: "練習を ＿＿ ＿＿ ★ ＿＿ 。", c: ["重[かさ]ねる", "上手[じょうず]に", "ダンスが", "につれて"], ans: 3 }
+          },
+          {
+            p: 5,
+            v1: { w: "短気[たんき]", m: "急躁、易怒", e1: "彼[かれ]は短気[たんき]ですぐに怒[おこ]る。", m1: "他個性急躁，馬上就會生氣。", e2: "燐音[りんね]のからかいに、短気[たんき]を起[おこ]しそうになる一彩[ひいろ]。", m2: "面對燐音的戲弄，一彩差點就要發脾氣。" },
+            v2: { w: "重[かさ]ねる", m: "累積、重疊", e1: "寒[さむ]いので服[ふく]を何枚[なんまい]も重[かさ]ねて着[き]る。", m1: "因為很冷，所以衣服穿了好幾層。", e2: "嘎困[がっくん]はアフレコの練習[れんしゅう]を何度[なんど]も重[かさ]ねた。", m2: "嘎困一次又一次地反覆進行配音練習。" },
+            g: { p: "〜っぱなし", m: "一直保持...的狀態、放任不管", e1: "テレビをつけっぱなしで寝[ね]てしまった。", m1: "電視開著沒關就睡著了。", e2: "一彩[ひいろ]は興奮[こうふん]して、一日中[いちにちじゅう]喋[しゃべ]りっぱなしだった。", m2: "一彩太興奮了，一整天都在講話。" },
+            q: { t: "normal", text: "マイクを＿＿＿にして、楽屋を出てしまった。", c: ["入[い]れたまま", "入[い]れっぱなし", "入[い]れたきり", "入[い]れるついで"], ans: 2 }
+          },
+          {
+            p: 6,
+            v1: { w: "留守[るす]", m: "不在家", e1: "友達[ともだち]の家[いえ]を訪[たず]ねたが留守[るす]だった。", m1: "拜訪了朋友家，但他不在。", e2: "星奏館[せいそうかん]の部屋[へや]を訪[たず]ねたが、マヨイ先輩[せんぱい]は留守[るす]だった。", m2: "拜訪了星奏館的房間，但マヨイ前輩不在。" },
+            v2: { w: "制服[せいふく]", m: "制服", e1: "高校[こうこう]の制服[せいふく]がとても可愛[かわい]い。", m1: "高中的制服非常可愛。", e2: "ALKALOIDの制服[せいふく]衣装[いしょう]はトランプがモチーフだ。", m2: "ALKALOID的制服打歌服是以撲克牌為主題。" },
+            g: { p: "〜に対[たい]して", m: "對於...、與...相對", e1: "お客様[きゃくさま]に対[たい]して、丁寧[ていねい]な言葉[ことば]を使[つか]う。", m1: "對客人要使用禮貌的言語。", e2: "兄[あに]の燐音[りんね]に対[たい]して、一彩[ひいろ]は複雑[ふくざつ]な感情[かんじょう]を抱[いだ]いている。", m2: "對於哥哥燐音，一彩抱持著複雜的感情。" },
+            q: { t: "sort", text: "兄に ＿＿ ＿＿ ★ ＿＿ 、感情を抱いている。", c: ["対[たい]して", "複雑[ふくざつ]な", "兄[あに]に", "抱[いだ]いている"], ans: 2 }
+          },
+          {
+            p: 7,
+            v1: { w: "だるい", m: "疲倦、慵懶", e1: "熱[ねつ]があって体[からだ]がだるい。", m1: "發燒了覺得身體很倦怠。", e2: "徹夜[てつや]でゲームをしたせいで、今日[きょう]は体[からだ]がだるい一彩[ひいろ]。", m2: "因為熬夜打遊戲，一彩今天覺得身體很倦怠。" },
+            v2: { w: "貯金[ちょきん]", m: "存錢", e1: "将来[しょうらい]のために毎月[まいつき]貯金[ちょきん]している。", m1: "為了將來每個月都在存錢。", e2: "一彩[ひいろ]は故郷[こきょう]の村[むら]のために少しずつ貯金[ちょきん]をしている。", m2: "一彩為了故鄉的村莊一點一滴地在存錢。" },
+            g: { p: "〜として", m: "作為...、身為...", e1: "彼[かれ]は留学生[りゅうがくせい]として日本[にほん]に来[き]ました。", m1: "他作為留學生來到了日本。", e2: "嘎困[がっくん]は声優[せいゆう]としてだけでなく、アーティストとしても活動[かつどう]している。", m2: "嘎困不僅作為聲優，也作為歌手在活動。" },
+            q: { t: "normal", text: "一彩はリーダー＿＿＿、皆を引っ張っている。", c: ["にとって", "として", "にしては", "とともに"], ans: 2 }
+          },
+          {
+            p: 8,
+            v1: { w: "親[した]しい", m: "親密的", e1: "彼女[かのじょ]は私[わたし]の最も親[した]しい友人[ゆうじん]だ。", m1: "她是我最親密的朋友。", e2: "ユニットの仲間[なかま]は、誰[だれ]よりも親[した]しい存在[そんざい]になった。", m2: "團體的夥伴成為了比任何人都親密的存在。" },
+            v2: { w: "比[くら]べる", m: "比較", e1: "ネットで価格[かかく]を比[くら]べてから買[か]う。", m1: "在網路上比較價格後再買。", e2: "一彩[ひいろ]は都会[とかい]の景色[けしき]と故郷[こきょう]の山々[やまやま]を比[くら]べた。", m2: "一彩將都市的景色與故鄉的群山做了比較。" },
+            g: { p: "〜かわりに", m: "代替...、作為...的交換", e1: "社長[しゃちょう]のかわりに、私[わたし]が会議[かいぎ]に出席[しゅっせき]します。", m1: "我代替社長出席會議。", e2: "お弁当[べんとう]を作[つく]ってもらったかわりに、一彩[ひいろ]は掃除[そうじ]を手伝[てつだ]った。", m2: "作為幫忙做便當的交換，一彩幫忙打掃了。" },
+            q: { t: "sort", text: "社長の ＿＿ ＿＿ ★ ＿＿ 、出席します。", c: ["私[わたし]が", "出席[しゅっせき]します", "かわりに", "社長[しゃちょう]の"], ans: 1 }
+          },
+          {
+            p: 9,
+            v1: { w: "努力[どりょく]", m: "努力", e1: "目標[もくひょう]に向[む]かって努力[どりょく]を続[つづ]ける。", m1: "朝著目標持續努力。", e2: "嘎困[がっくん]の努力[どりょく]が実[みの]り、初[はじ]めての主演[しゅえん]を掴[つか]んだ。", m2: "嘎困的努力結出果實，抓住了首次的主演機會。" },
+            v2: { w: "お互[たが]い", m: "互相", e1: "困[こま]ったときはお互[たが]い様[さま]だ。", m1: "困難時大家彼此彼此（互相幫忙）。", e2: "ALKALOIDのメンバーは、お互[たが]いの弱点[じゃくてん]を補[おぎな]い合[あ]う。", m2: "ALKALOID的成員互相彌補彼此的弱點。" },
+            g: { p: "〜に比[くら]べて", m: "與...相比", e1: "今年[ことし]の夏[なつ]は去年[きょねん]に比[くら]べて暑[あつ]いですね。", m1: "今年的夏天比去年還要熱呢。", e2: "故郷[こきょう]の村[むら]に比[くら]べて、都会[とかい]の夜[よる]は明[あか]るすぎる。", m2: "和故鄉的村子相比，都市的夜晚太亮了。" },
+            q: { t: "normal", text: "都会の生活は、故郷の村＿＿＿便利だが複雑だ。", c: ["に比[くら]べて", "に対[たい]して", "にとって", "にしたがって"], ans: 1 }
+          },
+          {
+            p: 10,
+            v1: { w: "譲[ゆず]る", m: "讓給", e1: "電車[でんしゃ]でお年寄[としよ]りに席[せき]を譲[ゆず]る。", m1: "在電車上讓座給老人家。", e2: "一彩[ひいろ]は藍良[あいら]に最後[さいご]の唐揚[からあ]げを譲[ゆず]ってあげた。", m2: "一彩把最後一塊炸雞塊讓給了藍良。" },
+            v2: { w: "溢[あふ]れる", m: "溢出、充滿", e1: "コップから水[みず]が溢[あふ]れそうだ。", m1: "水快從杯子裡溢出來了。", e2: "ライブ会場[かいじょう]はファンたちの熱気[ねっき]で溢[あふ]れていた。", m2: "演唱會現場充滿了粉絲們的熱情。" },
+            g: { p: "〜くらい・ぐらい", m: "大約、...到了...的程度", e1: "泣[な]きたいくらい痛[いた]かった。", m1: "痛到想哭的程度。", e2: "一彩[ひいろ]は、毎日[まいにち]オムライスを食[た]べたいくらい好[す]きだ。", m2: "一彩喜歡蛋包飯喜歡到每天都想吃的程度。" },
+            q: { t: "sort", text: "毎日 ＿＿ ＿＿ ★ ＿＿ 、オムライスが好きだ。", c: ["好[す]きだ", "食[た]べたい", "くらい", "毎日[まいにち]"], ans: 3 }
+          },
+          {
+            p: 11,
+            v1: { w: "隠[かく]す", m: "隱藏", e1: "彼女[かのじょ]は本当[ほんとう]の気持[きも]ちを隠[かく]している。", m1: "她隱藏了真實的心情。", e2: "マヨイ先輩[せんぱい]は自分[じぶん]の姿[すがた]を隠[かく]すのが得意[とくい]だ。", m2: "マヨイ前輩很擅長隱藏自己的身影。" },
+            v2: { w: "囲[かこ]む", m: "包圍、圍繞", e1: "テーブルを囲[かこ]んで家族[かぞく]で食事[しょくじ]をする。", m1: "一家人圍著餐桌吃飯。", e2: "リーダーの一彩[ひいろ]を囲[かこ]んで、円陣[えんじん]を組[く]む。", m2: "大家圍繞著隊長一彩，圍成了圓陣。" },
+            g: { p: "〜にとって", m: "對...而言", e1: "環境[かんきょう]問題[もんだい]は我々[われわれ]にとって重要[じゅうよう]な課題[かだい]だ。", m1: "環境問題對我們而言是重要的課題。", e2: "一彩[ひいろ]にとって、アイドルになることは大[おお]きな挑戦[ちょうせん]だった。", m2: "對一彩而言，成為偶像是一項巨大的挑戰。" },
+            q: { t: "normal", text: "一彩＿＿＿、ALKALOIDは大切な居場所だ。", c: ["に対[たい]して", "について", "にとって", "として"], ans: 3 }
+          },
+          {
+            p: 12,
+            v1: { w: "逆[ぎゃく]", m: "相反", e1: "駅[えき]とは逆[ぎゃく]の方向[ほうこう]に歩[ある]いてしまった。", m1: "往和車站相反的方向走去了。", e2: "燐音[りんね]の言[い]うことと逆[ぎゃく]の行動[こうどう]をとる一彩[ひいろ]。", m2: "採取與燐音所說的話相反的行動的一彩。" },
+            v2: { w: "偶然[ぐうぜん]", m: "偶然", e1: "街[まち]で偶然[ぐうぜん]昔[むかし]の友達[ともだち]に会[あ]った。", m1: "在街上偶然遇見了以前的朋友。", e2: "スタジオで偶然[ぐうぜん]、憧[あこが]れの先輩[せんぱい]声優[せいゆう]に会[あ]った嘎困[がっくん]。", m2: "嘎困在錄音室偶然遇見了憧憬的前輩聲優。" },
+            g: { p: "〜ついでに", m: "順便...", e1: "散歩[さんぽ]のついでに、手紙[てがみ]を出[だ]してきます。", m1: "去散步順便把信寄出去。", e2: "スタジオへ行[い]くついでに、一彩[ひいろ]は皆[みな]の飲[の]み物[もの]を買[か]ってきた。", m2: "去錄音室順便，一彩買了大家的飲料。" },
+            q: { t: "sort", text: "散歩に ＿＿ ＿＿ ★ ＿＿ 、手紙を出した。", c: ["行[い]く", "ついでに", "コンビニで", "手紙[てがみ]を出した"], ans: 2 }
+          },
+          {
+            p: 13,
+            v1: { w: "苦[くる]しい", m: "痛苦、艱難", e1: "マラソンの後半[こうはん]は息[いき]が苦[くる]しい。", m1: "馬拉松的後半段呼吸很困難。", e2: "どんなに苦[くる]しい練習[れんしゅう]でも、一彩[ひいろ]は笑顔[えがお]を絶[た]やさない。", m2: "無論多麼痛苦的練習，一彩都不會失去笑容。" },
+            v2: { w: "興奮[こうふん]", m: "興奮", e1: "試合[しあい]に勝[か]って興奮[こうふん]して眠[ねむ]れない。", m1: "贏了比賽太興奮睡不著。", e2: "初[はじ]めてのドーム公演[こうえん]に、メンバー全員[ぜんいん]が興奮[こうふん]した。", m2: "對於第一次的巨蛋公演，所有成員都非常興奮。" },
+            g: { p: "〜とおりに", m: "按照...、如...一樣", e1: "説明書[せつめいしょ]のとおりに組[く]み立[た]ててください。", m1: "請按照說明書組裝。", e2: "マヨイ先輩[せんぱい]が教[おし]えてくれたとおりに、ステップを踏[ふ]む。", m2: "按照マヨイ前輩教的那樣踩踏舞步。" },
+            q: { t: "normal", text: "先輩が言った＿＿＿練習したら、上手になった。", c: ["かわりに", "とおりに", "ついでに", "最中[さいちゅう]に"], ans: 2 }
+          },
+          {
+            p: 14,
+            v1: { w: "越[こ]える", m: "越過", e1: "国境[こっきょう]を越[こ]えて活躍[かつやく]する選手[せんしゅ]。", m1: "跨越國界活躍的選手。", e2: "天城[あまぎ]の宿命[しゅくめい]を越[こ]えて、一彩[ひいろ]は自分[じぶん]の道[みち]を進[すす]む。", m2: "跨越天城的宿命，一彩走向自己的道路。" },
+            v2: { w: "避[さ]ける", m: "避免、躲避", e1: "渋滞[じゅうたい]を避[さ]けて裏道[うらみち]を通[とお]る。", m1: "為了避開塞車走小路。", e2: "人込[ひとご]みを避[さ]けて、マヨイ先輩[せんぱい]は夜[よる]に散歩[さんぽ]する。", m2: "為了避開人群，マヨイ前輩在晚上散步。" },
+            g: { p: "〜にしたがって", m: "隨著...、跟隨...", e1: "ルールにしたがってゲームをしてください。", m1: "請遵守規則玩遊戲。", e2: "人気[にんき]が高[たか]まるにしたがって、一彩[ひいろ]の仕事[しごと]も増[ふ]えていった。", m2: "隨著人氣高漲，一彩的工作也增加了。" },
+            q: { t: "sort", text: "寒く ＿＿ ＿＿ ★ ＿＿ 、葉が落ちる。", c: ["にしたがって", "葉[は]が落ちる", "なる", "どんどん"], ans: 1 }
+          },
+          {
+            p: 15,
+            v1: { w: "覚[さ]める", m: "醒來", e1: "毎朝[まいあさ]６時[じ]に目[め]が覚[さ]める。", m1: "每天早上六點會醒來。", e2: "兄[あに]の声[こえ]が聞[き]こえて、一彩[ひいろ]はハッと目[め]が覚[さ]めた。", m2: "聽到哥哥的聲音，一彩猛然驚醒。" },
+            v2: { w: "騒[さわ]ぐ", m: "吵鬧", e1: "教室[きょうしつ]で生徒[せいと]たちが騒[さわ]いでいる。", m1: "學生們在教室裡吵鬧。", e2: "楽屋[がくや]で騒[さわ]ぐ一彩[ひいろ]たちを、巽先輩[たつみせんぱい]が優[やさ]しく見守[みまも]る。", m2: "巽前輩溫柔地守護著在休息室吵鬧的一彩他們。" },
+            g: { p: "〜きり", m: "僅僅...、自從...之後就沒...", e1: "彼[かれ]とは去年[きょねん]会[あ]ったきり、連絡[れんらく]を取[と]っていない。", m1: "自從去年和他見面後，就再也沒聯絡過。", e2: "二人[ふたり]きりで真面目[まじめ]な話[はなし]をするのは、これが初[はじ]めてかもしれない。", m2: "兩個人單獨說正經事，這可能還是第一次。" },
+            q: { t: "normal", text: "兄が故郷を出た＿＿＿、一度も帰ってこない。", c: ["まま", "きり", "っぱなし", "おかげで"], ans: 2 }
+          },
+          {
+            p: 16,
+            v1: { w: "叱[しか]る", m: "責罵", e1: "宿題[しゅくだい]を忘[わす]れて先生[せんせい]に叱[しか]られた。", m1: "忘記寫作業被老師罵了。", e2: "無茶[むちゃ]をした一彩[ひいろ]は、珍[めずら]しく巽先輩[たつみせんぱい]に叱[しか]られた。", m2: "亂來的一彩，罕見地被巽前輩責罵了。" },
+            v2: { w: "渋滞[じゅうたい]", m: "塞車", e1: "事故[じこ]のせいで道[みち]が渋滞[じゅうたい]している。", m1: "因為事故，道路正在塞車。", e2: "渋滞[じゅうたい]に巻[ま]き込[こ]まれ、ライブに遅刻[ちこく]しそうになる嘎困[がっくん]。", m2: "被捲入塞車中，嘎困差點趕不上演唱會。" },
+            g: { p: "〜ふりをする", m: "裝作...的樣子", e1: "知[し]らないふりをして、彼[かれ]のサプライズを待[ま]った。", m1: "裝作不知道的樣子，等待他的驚喜。", e2: "一彩[ひいろ]は都会[とかい]のルールを分[わ]かっているふりをして、失敗[しっぱい]した。", m2: "一彩裝作懂都市規則的樣子，結果失敗了。" },
+            q: { t: "sort", text: "わかっている ＿＿ ＿＿ ★ ＿＿ しまった。", c: ["ふりを", "しまった", "して", "つい"], ans: 3 }
+          },
+          {
+            p: 17,
+            v1: { w: "勧[すす]める", m: "推薦、勸", e1: "店員[てんいん]に勧[すす]められた服[ふく]を買[か]った。", m1: "買了店員推薦的衣服。", e2: "藍良[あいら]に勧[すす]められたアイドル雑誌[ざっし]を読[よ]む一彩[ひいろ]。", m2: "一彩正在讀藍良推薦的偶像雜誌。" },
+            v2: { w: "済[す]ませる", m: "完成、解決", e1: "昼食[ちゅうしょく]はサンドイッチで簡単[かんたん]に済[す]ませた。", m1: "午餐用三明治簡單解決了。", e2: "嘎困[がっくん]は台本[だいほん]チェックを早[はや]めに済[す]ませて休[やす]んだ。", m2: "嘎困提早完成了劇本確認後便休息了。" },
+            g: { p: "〜せいで", m: "因為...、怪... (多指負面結果)", e1: "雨[あめ]のせいで、試合[しあい]が中止[ちゅうし]になった。", m1: "因為下雨，比賽取消了。", e2: "一彩[ひいろ]がボタンを押[お]し間違[まちが]えたせいで、エレベーターが止[と]まった。", m2: "因為一彩按錯按鈕，電梯停了。" },
+            q: { t: "normal", text: "寝不足の＿＿＿、頭が痛い。", c: ["おかげで", "せいで", "かわりに", "くらい"], ans: 2 }
+          },
+          {
+            p: 18,
+            v1: { w: "節約[せつやく]", m: "節約、節省", e1: "水[みず]や電気[でんき]を節約[せつやく]しましょう。", m1: "大家一起節約水電吧。", e2: "一彩[ひいろ]は生活費[せいかつひ]を節約[せつやく]して、ギターを買[か]った。", m2: "一彩節省生活費，買了一把吉他。" },
+            v2: { w: "倒[たお]れる", m: "倒下", e1: "強風[きょうふう]で木[き]が倒[たお]れてしまった。", m1: "因為強風，樹倒下來了。", e2: "過労[かろう]で倒[たお]れるほど、嘎困[がっくん]は仕事[しごと]に打[う]ち込[こ]んだ。", m2: "嘎困投入工作到了快因過勞倒下的程度。" },
+            g: { p: "〜まま", m: "保持著...的狀態", e1: "靴[くつ]を履[は]いたまま、部屋[へや]に入[はい]らないでください。", m1: "請不要穿著鞋子進房間。", e2: "一彩[ひいろ]は衣装[いしょう]を着[き]たまま、疲[つか]れて眠[ねむ]ってしまった。", m2: "一彩穿著打歌服，太累就睡著了。" },
+            q: { t: "sort", text: "コートを ＿＿ ＿＿ ★ ＿＿ 入った。", c: ["着[き]た", "まま", "部屋[へや]に", "そのまま"], ans: 2 }
+          },
+          {
+            p: 19,
+            v1: { w: "確[たし]かめる", m: "確認", e1: "出発[しゅっぱつ]前[まえ]に忘[わす]れ物[もの]がないか確[たし]かめる。", m1: "出發前確認有沒有忘記東西。", e2: "ステージに上[あ]がる前[まえ]に、マイクの電源[でんげん]を確[たし]かめた。", m2: "上台前，確認了麥克風的電源。" },
+            v2: { w: "頼[たよ]る", m: "依賴", e1: "困[こま]ったときは親[おや]に頼[たよ]ってもいい。", m1: "困難時也可以依賴父母。", e2: "一彩[ひいろ]は時[とき]には先輩[せんぱい]たちに頼[たよ]ることを覚[おぼ]えた。", m2: "一彩學會了有時也要依賴前輩們。" },
+            g: { p: "〜に代[か]わって", m: "代替...", e1: "病気[びょうき]の母[はは]に代[か]わって、私[わたし]が夕食[ゆうしょく]を作[つく]ります。", m1: "我代替生病的母親做晚餐。", e2: "忙[いそが]しいリーダーの燐音[りんね]に代[か]わって、一彩[ひいろ]が挨拶[あいさつ]した。", m2: "一彩代替忙碌的隊長燐音打了招呼。" },
+            q: { t: "normal", text: "社長＿＿＿、私がご挨拶申し上げます。", c: ["に代[か]わって", "に対[たい]して", "に比[くら]べて", "にとって"], ans: 1 }
+          },
+          {
+            p: 20,
+            v1: { w: "黙[だま]る", m: "沉默", e1: "怒[おこ]っているのか、彼[かれ]はずっと黙[だま]っている。", m1: "不知道是不是在生氣，他一直保持沉默。", e2: "燐音[りんね]の真意[しんい]が分[わ]からず、一彩[ひいろ]は黙[だま]り込[こ]んだ。", m2: "不明白燐音的真意，一彩陷入了沉默。" },
+            v2: { w: "悩[なや]む", m: "煩惱", e1: "卒業後[そつぎょうご]の進路[しんろ]について悩[なや]んでいる。", m1: "正為了畢業後的出路感到煩惱。", e2: "役作[やくづく]りに悩[なや]んだ末[すえ]、嘎困[がっくん]は新[あたら]しい表現[ひょうげん]を見[み]つけた。", m2: "在為角色塑造煩惱之後，嘎困找到了新的表現方式。" },
+            g: { p: "〜ほど", m: "越...越...、...到...的程度", e1: "考[かんが]えれば考[かんが]えるほど、分[わ]からなくなる。", m1: "越想越不明白。", e2: "練習[れんしゅう]すればするほど、一彩[ひいろ]のダンスは上達[じょうたつ]する。", m2: "越是練習，一彩的舞蹈就越進步。" },
+            q: { t: "sort", text: "練習すれば ＿＿ ＿＿ ★ ＿＿ 上達する。", c: ["する", "ほど", "上達[じょうたつ]する", "ダンスが"], ans: 4 }
+          }
+        ];
+
+        // === 解析器：處理 漢字[假名] 自動轉換為 Ruby 標籤 ===
+        const parseFurigana = (text) => {
+          if (!text) return text;
+          const regex = /([\u4e00-\u9fff々]+)\[([ぁ-んァ-ンa-zA-Z0-9]+)\]/g;
+          const elements = [];
+          let lastIndex = 0;
+          let match;
+
+          while ((match = regex.exec(text)) !== null) {
+            if (match.index > lastIndex) {
+              elements.push(<span key={`text-${lastIndex}`}>{text.substring(lastIndex, match.index)}</span>);
+            }
+            elements.push(
+              <ruby key={`ruby-${match.index}`} className="group relative px-[1px]">
+                {match[1]}
+                <rt className="text-[0.6em] text-gray-500 font-normal leading-none -translate-y-1">{match[2]}</rt>
+              </ruby>
+            );
+            lastIndex = regex.lastIndex;
+          }
+          if (lastIndex < text.length) {
+            elements.push(<span key={`text-${lastIndex}`}>{text.substring(lastIndex)}</span>);
+          }
+          return elements;
+        };
+
+        // === 封面元件 ===
+        const CoverPage = () => (
+          <div className="a4-landscape flex flex-col items-center justify-center bg-emerald-50 border-8 border-emerald-200 relative overflow-hidden">
+            <div className="absolute top-10 left-10 text-9xl text-emerald-200/40 rotate-12">♠</div>
+            <div className="absolute bottom-10 right-10 text-9xl text-red-200/40 -rotate-12">♥</div>
+            <div className="absolute top-20 right-20 text-6xl text-emerald-300/30">♣</div>
+            <div className="absolute bottom-20 left-20 text-6xl text-red-300/30">♦</div>
+            
+            <div className="bg-white/80 p-16 rounded-3xl shadow-xl backdrop-blur-sm text-center border border-emerald-100 z-10 w-3/4">
+              <h2 className="text-2xl text-emerald-600 font-bold mb-4 tracking-widest">N3 文法・語彙 学習シート (Advanced)</h2>
+              <h1 className="text-6xl font-black text-gray-800 mb-8 leading-tight">
+                跟著 <span className="text-red-500">一彩</span> <br/>
+                跟 <span className="text-emerald-500">嘎困</span> 學好 N3
+              </h1>
+              <div className="inline-block bg-emerald-500 text-white px-6 py-2 rounded-full text-xl font-bold shadow-md">
+                Part 1
+              </div>
+              <p className="mt-8 text-gray-500 font-medium">包含 40個進階單字 & 20個核心文法</p>
+            </div>
+          </div>
+        );
+
+        // === 單字卡元件 ===
+        const VocabCard = ({ data, num }) => (
+          <div className="flex-1 bg-gray-50 rounded-xl p-4 border border-gray-200 shadow-sm flex flex-col">
+            <div className="flex items-baseline gap-3 mb-2">
+              <span className="bg-emerald-500 text-white text-xs px-2 py-1 rounded shadow-sm">單字 {num}</span>
+              <h3 className="text-3xl font-bold text-gray-800">{parseFurigana(data.w)}</h3>
+              <span className="text-gray-500 text-sm ml-auto font-medium">({data.m})</span>
+            </div>
+            <div className="flex-1 flex flex-col justify-center space-y-3 mt-2">
+              <div className="border-l-4 border-emerald-400 pl-3">
+                <p className="text-[1.1rem] text-gray-800 font-medium">{parseFurigana(data.e1)}</p>
+                <p className="text-sm text-gray-500 mt-1">{data.m1}</p>
+              </div>
+              <div className="border-l-4 border-red-400 pl-3 bg-red-50/50 py-1.5 pr-2 rounded-r-lg">
+                <p className="text-[1.1rem] text-gray-800 font-medium">{parseFurigana(data.e2)}</p>
+                <p className="text-sm text-gray-500 mt-1">{data.m2}</p>
+              </div>
+            </div>
+          </div>
+        );
+
+        // === 內容頁元件 ===
+        const ContentPage = ({ data }) => (
+          <div className="a4-landscape bg-white flex flex-col relative">
+            {/* Header */}
+            <div className="flex justify-between items-end border-b-2 border-emerald-300 pb-2 mb-4 shrink-0">
+              <h2 className="text-xl font-bold text-emerald-700 flex items-center">
+                <span className="text-2xl mr-2 text-red-500">♠</span> N3 學習講義
+              </h2>
+              <div className="text-emerald-700 font-bold bg-emerald-100/50 px-4 py-1 rounded-full border border-emerald-200">
+                Page - {data.p} -
+              </div>
+            </div>
+
+            {/* Content: Vocab Row */}
+            <div className="flex gap-4 mb-4 flex-1 h-[48%]">
+              <VocabCard data={data.v1} num={1} />
+              <VocabCard data={data.v2} num={2} />
+            </div>
+
+            {/* Content: Grammar & Quiz Row */}
+            <div className="flex gap-4 flex-1 h-[40%] mb-2">
+              {/* Grammar Card */}
+              <div className="flex-[3] bg-emerald-50/50 rounded-xl p-4 border border-emerald-100 flex flex-col">
+                <div className="flex items-baseline gap-3 mb-2">
+                  <span className="bg-emerald-600 text-white text-xs px-2 py-1 rounded">文法</span>
+                  <h3 className="text-2xl font-bold text-emerald-800">{data.g.p}</h3>
+                  <span className="text-gray-600 text-sm ml-auto">({data.g.m})</span>
+                </div>
+                <div className="flex-1 flex flex-col justify-center space-y-3">
+                  <div className="pl-2">
+                    <p className="text-[1.1rem] text-gray-800 font-medium">・{parseFurigana(data.g.e1)}</p>
+                    <p className="text-sm text-gray-500 ml-4">{data.g.m1}</p>
+                  </div>
+                  <div className="pl-2">
+                    <p className="text-[1.1rem] text-gray-800 font-medium">・{parseFurigana(data.g.e2)}</p>
+                    <p className="text-sm text-gray-500 ml-4">{data.g.m2}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quiz Card */}
+              <div className="flex-[2] bg-white rounded-xl p-4 border-2 border-dashed border-gray-300 flex flex-col relative">
+                <div className="mb-2">
+                  <span className="bg-gray-600 text-white text-xs px-2 py-1 rounded">
+                    實戰測驗 {data.q.t === "sort" ? "(排序題)" : ""}
+                  </span>
+                </div>
+                <div className="flex-1 flex flex-col justify-center">
+                  <p className="text-lg font-bold text-gray-800 mb-4">{parseFurigana(data.q.text)}</p>
+                  
+                  {data.q.t === "normal" ? (
+                    <div className="grid grid-cols-2 gap-3">
+                      {data.q.c.map((choice, i) => (
+                        <div key={i} className="text-sm border border-gray-200 rounded p-2 text-center bg-gray-50">
+                          {i + 1}. {parseFurigana(choice)}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {data.q.c.map((choice, i) => (
+                        <div key={i} className="text-sm border border-gray-200 rounded px-3 py-1 bg-gray-50 flex items-center">
+                          <span className="mr-2 text-gray-400 font-bold">{i + 1}.</span> {parseFurigana(choice)}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className="absolute bottom-2 right-2 text-[10px] text-gray-300">
+                  Ans: {data.q.ans}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+        // === 主程式 ===
+        function App() {
+          return (
+            <div className="min-h-screen py-8 flex flex-col items-center">
+              {/* 懸浮列印按鈕 */}
+              <button 
+                onClick={() => window.print()} 
+                className="fixed top-6 right-6 bg-emerald-600 text-white px-6 py-3 rounded-full shadow-xl hover:bg-emerald-700 transition-colors font-bold text-lg flex items-center gap-2 z-50 no-print"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                列印 / 輸出 PDF
+              </button>
+
+              <div className="mb-6 text-gray-500 font-bold no-print text-center">
+                — 往下滑動預覽所有頁面，點擊右上角按鈕即可列印 —<br/>
+                <span className="text-sm font-normal">（如遇到中文亂碼，請確認您的檔案已經儲存為 UTF-8 編碼）</span>
+              </div>
+              
+              {/* 封面 */}
+              <CoverPage />
+
+              {/* 20 頁內容 */}
+              {pageData.map(data => (
+                <ContentPage key={`page-${data.p}`} data={data} />
+              ))}
+            </div>
+          );
+        }
+
+        // === 渲染至 DOM ===
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
